@@ -44,8 +44,6 @@ class NandParser < Parser
     def call
         expr = primary
 
-        p check(:LEFT_PAREN)
-
         if match_token(:LEFT_PAREN)
             expr = finish_call(expr)
         end
@@ -92,7 +90,7 @@ class NandParser < Parser
             break if !match_token(:COMMA)
         end
         consume_token(:CLOSE_SQUARE, "Expecting ']' to end composite object.")
-        return NandExpressionComposite.new(start, params, objects)
+        return NandExpressionComposite.new(start, [], params, objects)
     end
 
     def simple_object

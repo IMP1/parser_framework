@@ -34,11 +34,13 @@ class NandExpressionComposite < Expression
 
     attr_reader :params
     attr_reader :objects
+    attr_reader :body
 
-    def initialize(start, params, objects)
+    def initialize(start, params, objects, body)
         super(start)
         @params = params
         @objects = objects
+        @body = body
     end
 
 end
