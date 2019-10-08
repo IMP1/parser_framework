@@ -15,7 +15,7 @@ class NandRunner < Visitor
         @queues = {}
     end
 
-    def run
+    def run(ticks=nil)
         return if @statements.empty?
         loop do
             begin
@@ -24,8 +24,9 @@ class NandRunner < Visitor
                     @current_tick += 1
                 end
                 $stdout.flush
+                ticks -= 1 unless ticks.nil?
+                break if ticks == 0
                 sleep(TICK_DELAY)
-                break # TODO: remove to continue loop
             rescue SignalException => e
                 break
             end
