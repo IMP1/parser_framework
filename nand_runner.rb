@@ -57,6 +57,11 @@ class NandRunner < Visitor
 
     def composite_entity(expr)
         puts "Composite Entity"
+        composite = @environment[expr.name]
+        args = expr.params
+        params = composite.params
+        p args
+        p params
     end
 
     def execute(stmt)

@@ -43,6 +43,10 @@ class NandExpressionComposite < Expression
         @body = body
     end
 
+    def params=(p)
+        @params = p
+    end
+
 end
 
 class NandExpressionSimple < Expression

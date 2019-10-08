@@ -32,6 +32,9 @@ class NandParser < Parser
             consume_token(:CLOSE_PAREN, "Expecting ')' to end parameter list.")
             consume_token(:EQUAL, "Expecting '=' as part of assignment")
             value = expression
+            if value.is_a?(NandExpressionComposite)
+                value.params = params.map { |param| NandExpressionVariable.new(param.lexeme) }
+            end
             return NandStatementAssignment.new(token, ident, value)
         end
         return NandStatementOutput.new(call)
