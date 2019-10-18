@@ -26,6 +26,17 @@ end
 
 class NandStatementOutput < Statement
 
+    attr_reader :values
+
+    def initialize(keyword, values)
+        super(keyword)
+        @values = values
+    end
+
+end
+
+class NandStatementCall < Statement
+
     attr_reader :value
 
     def initialize(value)

@@ -16,11 +16,9 @@ class NandParser < Parser
     def statement
         if match_token(:IMPORT)
             raise "Import not yet implemented. Sorry!"
-
             token = previous
             path = consume_token(:IDENTIFIER, "Expecting a variable name after the let keyword.")
-        end
-        if match_token(:LET)
+        elsif match_token(:DEF)
             token = previous
             ident = consume_token(:IDENTIFIER, "Expecting a variable name after the let keyword.")
             consume_token(:OPEN_PAREN, "Expecing '(' to begin parameter list.")
@@ -30,14 +28,30 @@ class NandParser < Parser
                 break if !match_token(:COMMA)
             end
             consume_token(:CLOSE_PAREN, "Expecting ')' to end parameter list.")
+            value = expression
+            if value.is_a?(NandExpressionComposite)
+                value.params = params.map { |param| NandExpressionVariable.new(param.lexeme) }
+            end
+            return NandStatementAssignment.new(token, ident, value)
+        elsif match_token(:LET)
+            token = previous
+            ident = consume_token(:IDENTIFIER, "Expecting a variable name after the let keyword.")
             consume_token(:EQUAL, "Expecting '=' as part of assignment")
             value = expression
             if value.is_a?(NandExpressionComposite)
                 value.params = params.map { |param| NandExpressionVariable.new(param.lexeme) }
             end
             return NandStatementAssignment.new(token, ident, value)
+        elsif match_token(:OUTPUT)
+            token = previous
+            values = []
+            loop do
+                values.push(expression)
+                break if !match_token(:COMMA)
+            end
+            return NandStatementOutput.new(token, values)
         end
-        return NandStatementOutput.new(call)
+        return NandStatementCall.new(call)
     end
 
     def expression
@@ -76,24 +90,12 @@ class NandParser < Parser
 
     def composite_object
         start = previous
-        params = []
-        if match_token(:PIPE)
-            while !check(:PIPE)
-                ident = consume_token(:IDENTIFIER, "Expecting identifier name.")
-                consume_token(:COLON, "Expecting ':' to separate parameter name and type.")
-                type = consume_token(:IDENTIFIER, "Expecting identifier type.")
-                params.push({name: ident, type:type})
-                break if !match_token(:COMMA)
-            end
-            consume_token(:PIPE, "Expecting '|' to end parameter list.")
-        end
-        objects = []
+        body = []
         while !eof? && !check(:CLOSE_SQUARE)
-            objects.push(simple_object)
-            break if !match_token(:COMMA)
+            body.push(statement)
         end
         consume_token(:CLOSE_SQUARE, "Expecting ']' to end composite object.")
-        return NandExpressionComposite.new(start, [], params, objects)
+        return NandExpressionComposite.new(start, [], body)
     end
 
     def simple_object

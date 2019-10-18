@@ -33,18 +33,40 @@ end
 class NandExpressionComposite < Expression
 
     attr_reader :params
-    attr_reader :objects
     attr_reader :body
 
-    def initialize(start, params, objects, body)
+    def initialize(start, params, body)
         super(start)
         @params = params
-        @objects = objects
         @body = body
     end
 
-    def params=(p)
-        @params = p
+    def params=(new_params)
+        @params = new_params
+    end
+
+end
+
+class NandExpressionObject < Expression
+
+    attr_reader :name
+    attr_reader :object
+
+    def initialize(token, object)
+        super(token)
+        @name = token.lexeme
+        @object = object
+    end
+
+end
+
+class NandExpressionReference < Expression
+
+    attr_reader :name
+
+    def initialize(token)
+        super(token)
+        @name = token.lexeme
     end
 
 end

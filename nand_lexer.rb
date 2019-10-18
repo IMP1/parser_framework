@@ -3,7 +3,9 @@ require_relative 'lexer'
 class NandLexer < Lexer
 
     KEYWORDS = {
+        'def'    => :DEF,
         'let'    => :LET,
+        'out' => :OUTPUT,
         'import' => :IMPORT,
     }
 

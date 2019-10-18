@@ -38,7 +38,7 @@ class Parser
     def consume_token(type, error_message="")
         return advance if check(type)
         puts error_message + " Got #{peek}."
-        puts @tokens.map { |t| t.inspect }.join("\n")
+        puts previous.origin.join(":")
         exit(1)
         # e = BlossomSyntaxError.new(peek, error_message + " Got #{peek}.")
         # Runner.syntax_error(e)

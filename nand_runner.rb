@@ -2,7 +2,7 @@ require_relative 'visitor'
 
 class NandRunner < Visitor
 
-    TICK_DELAY = 1
+    TICK_DELAY = 0.5
 
     def initialize(statements)
         @statements = statements
@@ -59,10 +59,14 @@ class NandRunner < Visitor
     def composite_entity(expr)
         puts "Composite Entity"
         composite = @environment[expr.name]
-        args = expr.params
         params = composite.params
-        p args
-        p params
+        args = params.map.with_index { |param, i| [param.name, evaluate(expr.params[i])] }.to_h
+        # TODO: push a scope?
+        composite.body.each do |stmt|
+            execute(stmt)
+        end
+        # TODO: pop a scope?
+        puts
     end
 
     def execute(stmt)
@@ -78,8 +82,13 @@ class NandRunner < Visitor
         @environment[stmt.name.lexeme] = stmt.value
     end
 
-    def visit_NandStatementOutput(stmt)
+    def visit_NandStatementCall(stmt)
         puts evaluate(stmt.value) ? 1 : 0
+    end
+
+    def visit_NandStatementOutput(stmt)
+        puts "Output"
+
     end
 
     def visit_NandExpressionCall(expr)
