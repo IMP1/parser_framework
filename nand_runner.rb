@@ -7,8 +7,6 @@ class NandRunner < Visitor
     def initialize(statements)
         @statements = statements
         @environment = {}
-
-        @variables = {}
         @current_tick = 0
         @last_update = {}
         @last_value = {}
@@ -33,24 +31,36 @@ class NandRunner < Visitor
         end
     end
 
+    def constant?(expr)
+        return case expr
+        when NandExpressionLive
+            true
+        when NandExpressionGround
+            true
+        else
+            false
+        end
+    end
+
     def simple_entity(expr)
         puts "Simple Entity"
-        p expr.params
-        p @environment[expr.name].params
-        raise "Wrong number of arguments" if expr.params.size != @environment[expr.name].params.size
+        puts expr.name
+        arg_count = expr.params.size
+        param_count = @environment[expr.name].params.reject { |param| constant?(param) }.size
+        raise "Wrong number of arguments" if arg_count != param_count
         args = expr.params.map { |arg| evaluate(arg) }
-        old_variables = {}
+        old_variables = {} # TODO: push scope
         @environment[expr.name].params.each_with_index do |param, i|
-            old_variables[param.name.lexeme] = @variables[param.name.lexeme]
-            @variables[param.name.lexeme] = args[i]
+            old_variables[param.name.lexeme] = @environment[param.name.lexeme]
+            @environment[param.name.lexeme] = args[i]
         end
         puts "#{expr.name} => #{@environment[expr.name].name}"
         result = evaluate(@environment[expr.name]) # TODO: map parameters/arguments across
-        old_variables.each do |key, value|
+        old_variables.each do |key, value|  # TODO: pop scope
             if value.nil?
-                @variables.delete(key)
+                @environment.delete(key)
             else
-                @variables[key] = value
+                @environment[key] = value
             end
         end
         return result
@@ -88,7 +98,8 @@ class NandRunner < Visitor
 
     def visit_NandStatementOutput(stmt)
         puts "Output"
-
+        p stmt.values.map { |val| evaluate(val) }
+        puts "---"
     end
 
     def visit_NandExpressionCall(expr)
@@ -146,6 +157,8 @@ class NandRunner < Visitor
         else
             if @environment[expr.name]
                 case @environment[expr.name]
+                when NandExpressionVariable
+                    return evaluate(@environment[expr.name])
                 when NandExpressionSimple
                     return simple_entity(expr)
                 when NandExpressionComposite
@@ -160,8 +173,10 @@ class NandRunner < Visitor
 
     def visit_NandExpressionVariable(expr)
         puts "Variable"
-        puts "#{expr.name.lexeme} => #{@variables[expr.name.lexeme]}"
-        return @variables[expr.name.lexeme]
+        if @environment[expr.name.lexeme].nil?
+            puts "Unrecognised variable '#{expr.name.lexeme}'."
+        end
+        return evaluate(@environment[expr.name.lexeme])
     end
 
 
