@@ -120,6 +120,7 @@ class NandRunner < Visitor
         callee = evaluate(expr.callee)
         puts "Callee: "
         p callee
+        p callee.outputs
         args = expr.inputs.map { |input| evaluate(input) }.flatten
         with_scope(expr.token.lexeme) do
             callee.inputs.each_with_index { |param, i| puts "#{param.lexeme} => #{args[i]}"; @environment[param.lexeme] = args[i] }
@@ -149,7 +150,16 @@ class NandRunner < Visitor
         # TODO: Rethink this from ground up.
         puts "Nand"
         p expr
-        return ->(a, b) { !(a && b) }
+        token = expr.token
+        inputs = expr.inputs
+        puts "Inputs: #{inputs.inspect}"
+        sub_components = expr.sub_components
+        # TODO: what should output functions be?
+        output_functions = expr.outputs.map do |output|
+            ->() { nand(output) }
+        end
+        instance = NandExpressionComponentInstance.new(token, inputs, sub_components, output_functions)
+        return instance
     end
 
     def visit_NandExpressionComponentBlueprint(expr)
@@ -165,7 +175,7 @@ class NandRunner < Visitor
             ->() { evaluate(output) }
         end
         instance = NandExpressionComponentInstance.new(token, inputs, sub_components, output_functions)
-        return evaluate(instance)
+        return instance
     end
 
     def visit_NandExpressionComponentInstance(expr)
