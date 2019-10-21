@@ -26,12 +26,14 @@ end
 
 SOURCE = <<-END
 
-let clock() = [ |x: nand|
-    x(x, 0)
-]
+def not
+    in a
+    out nand(a, 1)
+end
 
-clock()
+out not(0)
+out not(1)
 
 END
 
-run(SOURCE, 2)
+run(SOURCE, 1)

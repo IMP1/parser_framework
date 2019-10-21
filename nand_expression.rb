@@ -1,4 +1,5 @@
 require_relative 'visitor'
+require_relative 'token'
 
 class Expression
     include Visitable
@@ -14,12 +15,12 @@ end
 class NandExpressionCall < Expression
 
     attr_reader :callee
-    attr_reader :params
+    attr_reader :inputs
 
-    def initialize(callee, params)
+    def initialize(callee, inputs)
         super(callee.token)
         @callee = callee
-        @params = params
+        @inputs = inputs
     end
 
 end
@@ -30,32 +31,21 @@ end
 class NandExpressionGround < Expression
 end
 
-class NandExpressionComposite < Expression
+class NandExpressionComponent < Expression
 
-    attr_reader :params
-    attr_reader :body
+    attr_reader :inputs
+    attr_reader :sub_components
+    attr_reader :outputs
 
-    def initialize(start, params, body)
+    def initialize(start, inputs, sub_components, outputs)
         super(start)
-        @params = params
-        @body = body
+        @inputs = inputs
+        @sub_components = sub_components
+        @outputs = outputs
     end
 
-    def params=(new_params)
-        @params = new_params
-    end
-
-end
-
-class NandExpressionObject < Expression
-
-    attr_reader :name
-    attr_reader :object
-
-    def initialize(token, object)
-        super(token)
-        @name = token.lexeme
-        @object = object
+    def inputs=(new_inputs)
+        @inputs = new_inputs
     end
 
 end
@@ -71,19 +61,6 @@ class NandExpressionReference < Expression
 
 end
 
-class NandExpressionSimple < Expression
-
-    attr_reader :name
-    attr_reader :params
-
-    def initialize(token, params)
-        super(token)
-        @name = token.lexeme
-        @params = params
-    end
-
-end
-
 class NandExpressionVariable < Expression
 
     attr_reader :name
@@ -95,3 +72,59 @@ class NandExpressionVariable < Expression
 
 end
 
+class NandExpressionNand < Expression
+
+    attr_reader :inputs
+    attr_reader :sub_components
+    attr_reader :outputs
+
+    def initialize(token)
+        super(token)
+        @inputs = [Token.new(:IDENTIFIER, "a", 0, 0, "sys.nand"), Token.new(:IDENTIFIER, "b", 0, 0, "sys.nand")]
+        @sub_components = []
+        @outputs = []
+    end
+
+end
+
+class NandExpressionComponentInstance < Expression
+
+    attr_reader :inputs
+    attr_reader :sub_components
+    attr_reader :outputs
+
+    def initialize(token, inputs, sub_components, outputs)
+        super(token)
+        @inputs = inputs
+        @sub_components = sub_components
+        @outputs = outputs
+        @last_update = nil
+        @last_value = nil
+    end
+
+    def update(tick)
+        return @last_value if tick == @last_update
+
+        result = outputs.map { |func| func.call }
+
+        @last_update = tick
+        @last_value = result
+        return result
+    end
+
+end
+
+class NandExpressionComponentBlueprint < Expression
+
+    attr_reader :inputs
+    attr_reader :sub_components
+    attr_reader :outputs
+
+    def initialize(token, inputs, sub_components, outputs)
+        super(token)
+        @inputs = inputs
+        @sub_components = sub_components
+        @outputs = outputs
+    end
+
+end

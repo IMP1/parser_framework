@@ -5,8 +5,10 @@ class NandLexer < Lexer
     KEYWORDS = {
         'def'    => :DEF,
         'let'    => :LET,
-        'out' => :OUTPUT,
+        'in'     => :INPUT,
+        'out'    => :OUTPUT,
         'import' => :IMPORT,
+        'end'    => :END,
     }
 
     def scan_token
@@ -33,8 +35,6 @@ class NandLexer < Lexer
             add_token(:OPEN_SQUARE)
         when ']'
             add_token(:CLOSE_SQUARE)
-        when '|'
-            add_token(:PIPE)
 
         #---
         # Comments
@@ -49,8 +49,6 @@ class NandLexer < Lexer
         #---
         when ','
             add_token(:COMMA)
-        when ':'
-            add_token(:COLON)
 
         #---
         # Operators
